@@ -92,6 +92,14 @@ final class Asset {
         shaders[name] = shdr;
         return *shdr;
     }
+    ref Shader loadShaderFromMemory(string name, string vs, string fs) {
+        auto shdr = new Shader;
+        *shdr = LoadShaderFromMemory(vs.toStringz, fs.toStringz);
+
+        if (auto oldPtr = name in shaders) UnloadShader(**oldPtr);
+        shaders[name] = shdr;
+        return *shdr;
+    }
     Shader* getShader(string name) nothrow {
         if (auto p = name in shaders) return *p;
         return null;

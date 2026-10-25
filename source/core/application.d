@@ -87,7 +87,7 @@ final class Application {
         if (settings.max_fps == 0)
             SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor())); else SetTargetFPS(settings.max_fps);
         log.log(LogType.info, "app created!");
-        asset.loadShader(ShaderName, "asset/shader/vs.glsl", "asset/shader/fs.glsl");
+        asset.loadShaderFromMemory(ShaderName, import("vs.glsl"), import("fs.glsl"));
 
         auto entry = Json.parseFile("entry.json");
         foreach (ref scene; entry["scenes"]) {
