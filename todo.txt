@@ -1,0 +1,7 @@
+- readme
+- docs
+- editor
+- distribution (.pak file with all of the game resources)
+- versions
+- raycasting
+- events

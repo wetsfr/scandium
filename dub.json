@@ -1,0 +1,20 @@
+{
+	"name": "scandium",
+	"description": "game engine",
+	"authors": ["wetsfr"],
+	"copyright": "none",
+	"stringImportPaths": ["script/include"],
+	"license": "BSD-3-Clause",
+	"dependencies": {
+		"raylib-d": "~>6.0.1"
+	},
+	"libs": [
+		"raylib",
+		"ode_double",
+		"tcc"
+	],
+	"lflags-windows": ["-L."],
+	"lflags-posix": ["-L."],
+	"lflags-osx": ["-rpath", "@executable_path/"],
+	"lflags-linux": ["-rpath=$$ORIGIN"]
+}
