@@ -41,6 +41,11 @@ struct AppSettings {
 
     // renderer
     int maxLights = 12;
+
+    // physics
+    float physicsStep = 1.0f / 60.0f;
+    int maxSubSteps = 10;
+    float gravity = 20.81f;
 }
 
 final class Application {

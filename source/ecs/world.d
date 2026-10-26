@@ -2,6 +2,7 @@ module ecs.world;
 import ecs.ecs;
 import core.asset;
 import core.log;
+import core.application;
 
 import ecs.components.tag;
 import ecs.components.transform;
@@ -130,7 +131,8 @@ final class World {
         environment = env;
         renderer.initialize(this, environment);
         uiSystem.initialize(this);
-        physics.initialize(this);
+        physics.initialize(this, Application.get.settings.physicsStep, Application.get.settings.maxSubSteps,
+            Application.get.settings.gravity);
         audio.initialize(this);
 
         reg.onUpdate!Transform3D().connect((Registry r, Entity ent) {

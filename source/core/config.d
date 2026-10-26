@@ -12,6 +12,10 @@ AppSettings generateAppSettings(string path) {
         ini.getBool("window", "fullscreen", false),
         ini.getInt("window", "max_fps", 60),
 
-        ini.getInt("render", "max_lights", 16)       
+        ini.getInt("render", "max_lights", 16),
+
+        ini.getFloat("physics", "step", 1.0f/60.0f),
+        ini.getInt("physics", "max_substeps", 10),
+        ini.getFloat("physics", "gravity", 20.81f)   
     );
 }

@@ -2,7 +2,7 @@
 	"name": "scandium",
 	"description": "game engine",
 	"authors": ["wetsfr"],
-	"copyright": "none",
+	"copyright": "wetsfr",
 	"stringImportPaths": ["script/include", "source/shader"],
 	"license": "BSD-3-Clause",
 	"dependencies": {

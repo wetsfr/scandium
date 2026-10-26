@@ -66,7 +66,7 @@ The linker searches the project root for libraries ("-L."), so the simplest setu
 2. Obtain the 64-bit libraries and place them in the project root:
    * **raylib.lib** and **raylib.dll** (or a static **raylib.lib**)
    * **ode_double.lib** and **ode_double.dll**
-   * **tcc.lib** (or **libtcc.lib**) and **libtcc.dll**, built from the [TinyCC sources](https://repo.or.cz/tinycc.git) with **win-32/build-tcc.bat**
+   * **tcc.lib** (or **libtcc.lib**) and **libtcc.dll**, built from the [TinyCC sources](https://repo.or.cz/tinycc.git) with **win32/build-tcc.bat**
 3. Build from PowerShell:
 
 ```

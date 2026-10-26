@@ -10,15 +10,13 @@ import ecs.world;
 import core.log;
 import ecs.ecs;
 
-enum float GRAVITY = 20.81f;
-enum float FIXED_STEP = 1.0f / 60.0f;
-enum int MAX_SUBSTEPS = 10;
-
 alias EntityPair = Tuple!(Entity, Entity);
 
 class PhysicsSystem {
 private:
     World m_world;
+    float physicsStep, physicsGravity;
+    int maxSubSteps;
 
     dWorldID odeWorld;
     dSpaceID space;
@@ -33,13 +31,18 @@ private:
     static Entity entityOf(dGeomID g) {
         return cast(Entity)cast(size_t) dGeomGetData(g); }
 public:
-    void initialize(World world) {
+    float timescale = 1.0f;
+
+    void initialize(World world, float step, int substeps, float gravity) {
         m_world = world;
+        physicsStep = step;
+        maxSubSteps = substeps;
+        physicsGravity = gravity;
         dInitODE();
         odeWorld = dWorldCreate();
         space = dHashSpaceCreate(null);
         contactGroup = dJointGroupCreate(0);
-        dWorldSetGravity(odeWorld, 0.0, -GRAVITY, 0.0);
+        dWorldSetGravity(odeWorld, 0.0, -physicsGravity, 0.0);
     }
 
     void shutdown() {
@@ -90,17 +93,18 @@ public:
                 setBodyTransform(rb.body, *tr);
         }
 
-        m_accumulator += dt;
+        m_accumulator += dt * timescale;
         int steps = 0;
-        m_current = null;
-        while (m_accumulator >= FIXED_STEP && steps < MAX_SUBSTEPS) {
+        while (m_accumulator >= physicsStep && steps < maxSubSteps) {
+            if (steps == 0) m_current = null;
             dSpaceCollide(space, cast(void*) this, &nearCallback);
-            dWorldStep(odeWorld, FIXED_STEP);
+            dWorldStep(odeWorld, physicsStep);
             dJointGroupEmpty(contactGroup);
-            m_accumulator -= FIXED_STEP;
+            m_accumulator -= physicsStep;
             steps++;
         }
-        if (steps == MAX_SUBSTEPS) m_accumulator = 0;
+        if (steps == 0) return;
+        if (m_accumulator >= physicsStep) m_accumulator = 0;
         
         foreach (item; m_world.view!(Rigidbody3D, Transform3D)()) {
             Entity e = item[0];

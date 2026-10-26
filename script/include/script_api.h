@@ -187,6 +187,7 @@ void cancel_invoke(void (*fn)(unsigned int), Entity e);
 void transform_move(Entity e, Vector3 pos);
 void transform_rotate(Entity e, Vector3 rot);
 void transform_scale(Entity e, Vector3 scale);
+void teleport(Entity e);
 
 void play_one_shot(Entity e);
 void stop_audio(Entity e);
