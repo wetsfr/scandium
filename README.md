@@ -6,7 +6,7 @@ Scandium is a lightweight 3D game engine written in D, with C scripting powered 
 
 ## Overview
 
-Scandium is built on the Entity-Component-System (ECS) pattern. Functionality is split into independent systems that operate on plain-data components stored in a central registry.Ф
+Scandium is built on the Entity-Component-System (ECS) pattern. Functionality is split into independent systems that operate on plain-data components stored in a central registry.
 
 ## Features
 
