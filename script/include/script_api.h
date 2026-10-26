@@ -162,7 +162,7 @@ void toggle_cursor();
 bool mouse_pressed(int button);
 bool mouse_down(int button);
 bool mouse_released(int button);
-const char* entity_name(Entity e);
+const char* text_format(const char* text, ...);
 
 // object
 
@@ -171,6 +171,7 @@ Entity create_entity(const char* name);
 Entity find_entity(const char* name);
 void destroy_entity(Entity e);
 bool valid(Entity e);
+const char* entity_name(Entity e);
 
 Entity get_current_camera();
 void set_current_camera(Entity cam);

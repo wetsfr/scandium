@@ -594,12 +594,13 @@ private:
         tccAddFn!scGetFPS(s, "get_fps");
         tccAddFn!scMouseDelta(s, "mouse_delta");
         tccAddFn!scToggleCursor(s, "toggle_cursor");
-        tccAddFn!scEntityName(s, "entity_name");
+        tccAddFn!TextFormat(s, "text_format");
 
         tccAddFn!scCreateEntity(s, "create_entity");
         tccAddFn!scFindEntity(s, "find_entity");
         tccAddFn!scDestroyEntity(s, "destroy_entity");
         tccAddFn!scValid(s, "valid");
+        tccAddFn!scEntityName(s, "entity_name");
 
         tccAddFn!scGetCurrentCamera(s, "get_current_camera");
         tccAddFn!scSetCurrentCamera(s, "set_current_camera");
