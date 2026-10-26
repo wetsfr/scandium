@@ -29,7 +29,6 @@ Scandium is built on the Entity-Component-System (ECS) pattern. Functionality is
 
 ## ToDo
 
-* Particle system
 * Editor
 * Animations
 * Parent/child hierarchy for transforms
