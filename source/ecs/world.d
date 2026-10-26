@@ -55,8 +55,8 @@ private Color rgb(ref const Json j) {
 
 final class World {
     private Registry reg;
-    private string[Entity] entityToName;
-    private Entity[string] nameToEntity;
+    string[Entity] entityToName;
+    Entity[string] nameToEntity;
 
     private Entity activeCamera = nullEntity;
     private Environment environment;

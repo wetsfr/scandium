@@ -129,6 +129,7 @@ __gshared scRigidbody rbScratch;
 __gshared scMeshCollider clScratch;
 __gshared scUIPrimitive prScratch;
 __gshared scUIText txScratch;
+__gshared string nameStr;
 
 __gshared char[] readBuf;
 __gshared char[] listBuf;
@@ -201,6 +202,12 @@ void scToggleCursor() {
 
     if (!cursorLocked) EnableCursor();
     else DisableCursor();
+}
+bool scMousePressed(int button) { return IsMouseButtonPressed(button); }
+const(char)* scEntityName(Entity e) {
+    if (!gWorld.registry.valid(e) || e !in gWorld.entityToName) return null;
+    nameStr = gWorld.entityName(e) ~ "\0";
+    return nameStr.ptr;
 }
 
 // entities
@@ -292,6 +299,9 @@ void scPlayOneShot(Entity e) {
 void scStopAudio(Entity e) {
     if (gWorld.has!AudioSource(e)) gWorld.get!AudioSource(e).stop();
 }
+
+// raycast
+RaycastHit scRaycast(Vector3 from, Vector3 to) { return gWorld.physics.raycast(from, to); }
 
 // scenes
 void scLoadScene(const(char)* name) {
@@ -544,6 +554,8 @@ private:
         tccAddFn!scGetFPS(s, "get_fps");
         tccAddFn!scMouseDelta(s, "mouse_delta");
         tccAddFn!scToggleCursor(s, "toggle_cursor");
+        tccAddFn!scMousePressed(s, "mouse_pressed");
+        tccAddFn!scEntityName(s, "entity_name");
 
         tccAddFn!scCreateEntity(s, "create_entity");
         tccAddFn!scFindEntity(s, "find_entity");
@@ -567,6 +579,8 @@ private:
 
         tccAddFn!scPlayOneShot(s, "play_one_shot");
         tccAddFn!scStopAudio(s, "stop_audio");
+
+        tccAddFn!scRaycast(s, "raycast");
 
         tccAddFn!scLoadScene(s, "load_scene");
 
