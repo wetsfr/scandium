@@ -187,6 +187,10 @@ void transform_scale(Entity e, Vector3 scale);
 void play_one_shot(Entity e);
 void stop_audio(Entity e);
 
+void add_force(Entity e, Vector3 force);
+void add_impulse(Entity e, Vector3 impulse);
+void set_velocity(Entity e, Vector3 vel);
+Vector3 get_velocity(Entity e);
 RaycastHit raycast(Vector3 from, Vector3 to);
 
 // scenes

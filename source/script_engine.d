@@ -300,8 +300,22 @@ void scStopAudio(Entity e) {
     if (gWorld.has!AudioSource(e)) gWorld.get!AudioSource(e).stop();
 }
 
-// raycast
+// physics
+void scAddForce(Entity e, Vector3 f) {
+    if (gWorld.has!Rigidbody3D(e)) gWorld.physics.addForce(e, f);
+}
+void scAddImpulse(Entity e, Vector3 imp) {
+    if (gWorld.has!Rigidbody3D(e)) gWorld.physics.addImpulse(e, imp);
+}
+void scSetVelocity(Entity e, Vector3 v) {
+    if (gWorld.has!Rigidbody3D(e)) gWorld.physics.setVelocity(e, v);
+}
+Vector3 scGetVelocity(Entity e) {
+    if (!gWorld.has!Rigidbody3D(e)) return Vector3(0, 0, 0);
+    return gWorld.physics.getVelocity(e);
+}
 RaycastHit scRaycast(Vector3 from, Vector3 to) { return gWorld.physics.raycast(from, to); }
+
 
 // scenes
 void scLoadScene(const(char)* name) {
@@ -581,6 +595,10 @@ private:
         tccAddFn!scStopAudio(s, "stop_audio");
 
         tccAddFn!scRaycast(s, "raycast");
+        tccAddFn!scAddForce(s, "add_force");
+        tccAddFn!scAddImpulse(s, "add_impulse");
+        tccAddFn!scSetVelocity(s, "set_velocity");
+        tccAddFn!scGetVelocity(s, "get_velocity");
 
         tccAddFn!scLoadScene(s, "load_scene");
 
