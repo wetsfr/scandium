@@ -36,6 +36,7 @@ struct AppSettings {
     int width = 800;
     int height = 600;
     bool debugLog = false;
+    bool fullscreen = false;
     int max_fps = 60;
 
     // renderer
@@ -86,6 +87,7 @@ final class Application {
         this.asset.loadDefaults();
         if (settings.max_fps == 0)
             SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor())); else SetTargetFPS(settings.max_fps);
+        if (settings.fullscreen) ToggleBorderlessWindowed();
         log.log(LogType.info, "app created!");
         asset.loadShaderFromMemory(ShaderName, import("vs.glsl"), import("fs.glsl"));
 

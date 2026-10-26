@@ -153,12 +153,15 @@ bool get_action(const char* name, bool pressed);
 float get_axis(const char* name);
 
 // generic
+WindowConfig window_config();
 void log_message(LogType type, const char* message, bool logToFile);
 float delta_time();
 int get_fps();
 Vector2 mouse_delta();
 void toggle_cursor();
 bool mouse_pressed(int button);
+bool mouse_down(int button);
+bool mouse_released(int button);
 const char* entity_name(Entity e);
 
 // object

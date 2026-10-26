@@ -9,6 +9,7 @@ AppSettings generateAppSettings(string path) {
         ini.getInt("window", "width", 800),
         ini.getInt("window", "height", 600),
         ini.getBool("window", "debug_log", false),
+        ini.getBool("window", "fullscreen", false),
         ini.getInt("window", "max_fps", 60),
 
         ini.getInt("render", "max_lights", 16)       

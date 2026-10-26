@@ -2,6 +2,7 @@ module script_engine;
 
 import libtcc;
 import raylib;
+import core.application;
 
 import core.stdc.math : sqrtf, floorf, ceilf, roundf, sinf, cosf, tanf,
     atan2f, powf, expf, logf, fmodf, hypotf, fabsf;
@@ -63,6 +64,12 @@ enum ComponentType : int {
     text,
 }
 
+struct WindowConfig {
+    int windowWidth, windowHeight;
+    bool vsync, fullscreen;
+    const(char)* title;
+}
+
 struct ScView(C, string[] names) {
     static foreach (n; names)
         mixin("typeof(C." ~ n ~ ")* " ~ n ~ ";");
@@ -83,6 +90,7 @@ alias scLightSource = ScView!(LightSource, ["color", "radius", "enabled"]);
 alias scRigidbody = ScView!(Rigidbody3D, ["mass", "friction", "restitution", "isKinematic"]);
 alias scUIPrimitive = ScView!(UIPrimitive, ["type", "size", "position", "rotation", "color",
     "texture", "layer", "active"]);
+alias scConfig = ScView!(WindowConfig, ["windowWidth", "windowHeight", "vsync", "fullscreen", "title"]);
 
 struct scMeshCollider {
     ColliderType type;
@@ -130,6 +138,7 @@ __gshared scMeshCollider clScratch;
 __gshared scUIPrimitive prScratch;
 __gshared scUIText txScratch;
 __gshared string nameStr;
+__gshared string titleStr;
 
 __gshared char[] readBuf;
 __gshared char[] listBuf;
@@ -159,6 +168,16 @@ void* transformView(Entity e) {
 }
 
 extern(C):
+
+WindowConfig scWindowConfig() {
+    titleStr = Application.get.settings.windowTitle ~ "\0";
+    return WindowConfig(
+        GetScreenWidth(), GetScreenHeight(),
+        Application.get.settings.max_fps == 0,
+        Application.get.settings.fullscreen,
+        titleStr.ptr
+    );
+}
 
 // assets
 void* scNewTexture(const(char)* name, const(char)* path) {
@@ -204,11 +223,8 @@ void scToggleCursor() {
     else DisableCursor();
 }
 bool scMousePressed(int button) { return IsMouseButtonPressed(button); }
-const(char)* scEntityName(Entity e) {
-    if (!gWorld.registry.valid(e) || e !in gWorld.entityToName) return null;
-    nameStr = gWorld.entityName(e) ~ "\0";
-    return nameStr.ptr;
-}
+bool scMouseDown(int button) { return IsMouseButtonDown(button); }
+bool scMouseReleased(int button) { return IsMouseButtonReleased(button); }
 
 // entities
 Entity scCreateEntity(const(char)* name) {
@@ -222,6 +238,11 @@ void scDestroyEntity(Entity e) {
 }
 bool scValid(Entity e) {
     return gWorld.registry.valid(e);
+}
+const(char)* scEntityName(Entity e) {
+    if (!gWorld.registry.valid(e) || e !in gWorld.entityToName) return null;
+    nameStr = gWorld.entityName(e) ~ "\0";
+    return nameStr.ptr;
 }
 
 Entity scGetCurrentCamera() { return gWorld.getActiveCamera(); }
@@ -555,6 +576,8 @@ private:
 
 
     static void registerApi(TCCState* s) {
+        tccAddFn!scWindowConfig(s, "window_config");
+
         tccAddFn!scNewTexture(s, "new_texture");
         tccAddFn!scLoadTexture(s, "load_texture");
 
@@ -562,13 +585,15 @@ private:
         tccAddFn!scBindAxis(s, "bind_axis");
         tccAddFn!scGetAction(s, "get_action");
         tccAddFn!scGetAxis(s, "get_axis");
+        tccAddFn!scMousePressed(s, "mouse_pressed");
+        tccAddFn!scMouseDown(s, "mouse_down");
+        tccAddFn!scMouseReleased(s, "mouse_released");
 
         tccAddFn!scLogMessage(s, "log_message");
         tccAddFn!scDeltaTime(s, "delta_time");
         tccAddFn!scGetFPS(s, "get_fps");
         tccAddFn!scMouseDelta(s, "mouse_delta");
         tccAddFn!scToggleCursor(s, "toggle_cursor");
-        tccAddFn!scMousePressed(s, "mouse_pressed");
         tccAddFn!scEntityName(s, "entity_name");
 
         tccAddFn!scCreateEntity(s, "create_entity");
