@@ -43,7 +43,8 @@ typedef enum ComponentType {
     Rigidbody,
     Collider,
     Primitive,
-    Text
+    Text,
+    Particles
 } ComponentType;
 
 // engine-level structs
@@ -139,6 +140,25 @@ typedef struct {
     int* layer;
     bool* active;
 } UIText;
+
+typedef struct {
+    bool* enabled;
+    bool* additive;
+
+    float* rate;
+    float* lifetime;
+    float* speed;
+    float* spread;
+    float* startSize;
+    float* endSize;
+    int* maxParticles;
+
+    Vector3* direction;
+    Vector3* gravity;
+    Color* startColor;
+    Color* endColor;
+    void** texture;
+} ParticleEmitter;
 
 // functions
 

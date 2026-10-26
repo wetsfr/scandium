@@ -26,6 +26,7 @@ import ecs.components.renderer.light_source;
 import ecs.components.audio;
 import ecs.components.rigidbody;
 import ecs.components.ui;
+import ecs.components.particles;
 import core.asset;
 import core.input;
 import core.log;
@@ -64,6 +65,7 @@ enum ComponentType : int {
     collider,
     primitive,
     text,
+    particles,
 }
 
 struct WindowConfig {
@@ -93,6 +95,9 @@ alias scRigidbody = ScView!(Rigidbody3D, ["mass", "friction", "restitution", "is
 alias scUIPrimitive = ScView!(UIPrimitive, ["type", "size", "position", "rotation", "color",
     "texture", "layer", "active"]);
 alias scConfig = ScView!(WindowConfig, ["windowWidth", "windowHeight", "vsync", "fullscreen", "title"]);
+alias scParticleEmitter = ScView!(ParticleEmitter, ["enabled", "additive", "rate", "lifetime",
+    "speed", "spread", "startSize", "endSize", "maxParticles", "direction", "gravity",
+    "startColor", "endColor", "texture"]);
 
 struct scMeshCollider {
     ColliderType type;
@@ -139,6 +144,7 @@ __gshared scRigidbody rbScratch;
 __gshared scMeshCollider clScratch;
 __gshared scUIPrimitive prScratch;
 __gshared scUIText txScratch;
+__gshared scParticleEmitter peScratch;
 __gshared string nameStr;
 __gshared string titleStr;
 
@@ -278,6 +284,7 @@ void* scAddComponent(Entity e, ComponentType type) {
         case ComponentType.collider:  return addView!Collider(e, clScratch);
         case ComponentType.primitive: return addView!UIPrimitive(e, prScratch);
         case ComponentType.text:      return addView!UIText(e, txScratch);
+        case ComponentType.particles: return addView!ParticleEmitter(e, peScratch);
         default: return null;
     }
 }
@@ -291,6 +298,7 @@ void* scGetComponent(Entity e, ComponentType type) {
         case ComponentType.collider:  return getView!Collider(e, clScratch);
         case ComponentType.primitive: return getView!UIPrimitive(e, prScratch);
         case ComponentType.text:      return getView!UIText(e, txScratch);
+        case ComponentType.particles: return getView!ParticleEmitter(e, peScratch);
         default: return null;
     }
 }
@@ -304,6 +312,7 @@ void scRemoveComponent(Entity e, ComponentType type) {
         case ComponentType.collider:  gWorld.remove!Collider(e);     break;
         case ComponentType.primitive: gWorld.remove!UIPrimitive(e);  break;
         case ComponentType.text:      gWorld.remove!UIText(e);       break;
+        case ComponentType.particles: gWorld.remove!ParticleEmitter(e); break;
         default: break;
     }
 }
