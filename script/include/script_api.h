@@ -183,6 +183,10 @@ void remove_component(Entity e, ComponentType type);
 void invoke(void (*fn)(unsigned int), Entity e, float seconds);
 void cancel_invoke(void (*fn)(unsigned int), Entity e);
 
+void subscribe(const char* name, void (*fn)(Entity, Entity, void*), Entity self);
+void unsubscribe(const char* name, void (*fn)(Entity, Entity, void*), Entity self);
+void emit(const char* name, Entity sender, void* data);
+
 // components
 void transform_move(Entity e, Vector3 pos);
 void transform_rotate(Entity e, Vector3 rot);

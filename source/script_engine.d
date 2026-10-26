@@ -38,12 +38,14 @@ enum cPrelude = "typedef _Bool bool;\n"
     ~ "#define NULL ((void*)0)\n";
 
 alias EntityFn = extern(C) void function(uint entity);
+alias PairFn = extern(C) void function(uint self, uint other);
 
 struct Script {
     TCCState* state;
     EntityFn initFn;
     EntityFn updateFn;
     EntityFn destroyFn;
+    PairFn enterFn, exitFn;
 }
 
 struct MainScript {
@@ -165,6 +167,19 @@ void* transformView(Entity e) {
     auto v = getView!Transform3D(e, trScratch);
     if (v) gWorld.get!Transform3D(e).dirty = true;
     return v;
+}
+
+alias EventFn = extern(C) void function(uint self, uint sender, void* data);
+struct Subscriber { Entity entity; EventFn fn; }
+__gshared Subscriber[][string] subscribers;
+
+void emitEvent(string name, Entity sender, void* data = null) {
+    auto list = name in subscribers;
+    if (!list) return;
+    foreach (s; (*list).dup) {
+        if (gWorld.registry.valid(s.entity) && gWorld.has!Script(s.entity))
+            s.fn(cast(uint) s.entity, cast(uint) sender, data);
+    }
 }
 
 extern(C):
@@ -305,6 +320,23 @@ void scCancelInvoke(void* fn, Entity e) {
             timers.length -= 1;
         } else i++;
     }
+}
+
+// events
+void scSubscribe(const(char)* name, void* fn, Entity self) {
+    if (fn is null) return;
+    subscribers[str(name)] ~= Subscriber(self, cast(EventFn) fn);
+}
+void scUnsubscribe(const(char)* name, void* fn, Entity self) {
+    auto list = str(name) in subscribers;
+    if (!list) return;
+    Subscriber[] kept;
+    foreach (s; *list)
+        if (!(s.entity == self && s.fn is cast(EventFn) fn)) kept ~= s;
+    *list = kept;
+}
+void scEmit(const(char)* name, Entity sender, void* data) {
+    emitEvent(str(name), sender, data);
 }
 
 // transforms
@@ -485,6 +517,8 @@ struct ScriptSystem {
         script.initFn = tccFn!(void, uint)(s, "init").ptr;
         script.updateFn = tccFn!(void, uint)(s, "update").ptr;
         script.destroyFn = tccFn!(void, uint)(s, "destroy").ptr;
+        script.enterFn = tccFn!(void, uint, uint)(s, "on_collision_enter").ptr;
+        script.exitFn  = tccFn!(void, uint, uint)(s, "on_collision_exit").ptr;
 
         world.add!Script(e, script);
         if (script.initFn) script.initFn(cast(uint) e);
@@ -510,6 +544,15 @@ struct ScriptSystem {
 
         if (main.updateFn) main.updateFn(dt);
         tickTimers(dt);
+    }
+    void dispatchCollision(Entity a, Entity b, bool enter) {
+        foreach (pair; [[a, b], [b, a]]) {
+            Entity self = pair[0], other = pair[1];
+            if (!world.registry.valid(self) || !world.has!Script(self)) continue;
+            auto s = &world.get!Script(self);
+            auto fn = enter ? s.enterFn : s.exitFn;
+            if (fn) fn(cast(uint) self, cast(uint) other);
+        }
     }
     void shutdown() {
         if (!world) return;
@@ -574,7 +617,6 @@ private:
         }
     }
 
-
     static void registerApi(TCCState* s) {
         tccAddFn!scWindowConfig(s, "window_config");
 
@@ -611,6 +653,10 @@ private:
 
         tccAddFn!scInvoke(s, "invoke");
         tccAddFn!scCancelInvoke(s, "cancel_invoke");
+
+        tccAddFn!scSubscribe(s, "subscribe");
+        tccAddFn!scUnsubscribe(s, "unsubscribe");
+        tccAddFn!scEmit(s, "emit");
 
         tccAddFn!scTransformMove(s, "transform_move");
         tccAddFn!scTransformRotate(s, "transform_rotate");

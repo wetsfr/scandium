@@ -117,15 +117,23 @@ public:
             }
         }
 
-        foreach (p, _; m_current)
-            if (p !in m_previous)
-                m_world.events.trigger(OnColliderEnter(p[0], p[1]));
+        EntityPair[] entered, exited;
 
+        foreach (p, _; m_current)
+            if (p !in m_previous) entered ~= p;
         foreach (p, _; m_previous)
-            if (p !in m_current)
-                m_world.events.trigger(OnColliderExit(p[0], p[1]));
+            if (p !in m_current) exited ~= p;
 
         m_previous = m_current;
+
+        foreach (p; entered) {
+            m_world.events.trigger(OnColliderEnter(p[0], p[1]));
+            m_world.scripts.dispatchCollision(p[0], p[1], true);
+        }
+        foreach (p; exited) {
+            m_world.events.trigger(OnColliderExit(p[0], p[1]));
+            m_world.scripts.dispatchCollision(p[0], p[1], false);
+        }
     }
     
     void addForce(Entity e, Vector3 f) {

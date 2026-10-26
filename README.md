@@ -34,7 +34,6 @@ Scandium is built on the Entity-Component-System (ECS) pattern. Functionality is
 * Animations
 * Parent/child hierarchy for transforms
 * Distribution (.pak file with all of the game resources)
-* Events
 * Documentation
 
 ## Credits
