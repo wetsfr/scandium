@@ -156,6 +156,7 @@ final class RendererSystem {
             }
         }
 
+        world.particles.draw(camera);
         EndMode3D();
     }
 

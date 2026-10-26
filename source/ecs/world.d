@@ -14,11 +14,13 @@ import ecs.environment;
 import ecs.components.rigidbody;
 import ecs.components.audio;
 import ecs.components.ui;
+import ecs.components.particles;
 
 import ecs.systems.renderer;
 import ecs.systems.ui;
 import ecs.systems.physics;
 import ecs.systems.audio;
+import ecs.systems.particles;
 
 import script_engine;
 
@@ -69,6 +71,7 @@ final class World {
     AudioSystem audio;
     EventBus events;
     ScriptSystem scripts;
+    ParticleSystem particles;
 
     this() {
         reg = new Registry();
@@ -128,12 +131,14 @@ final class World {
         uiSystem = new UI();
         physics = new PhysicsSystem();
         audio = new AudioSystem();
+        particles = new ParticleSystem();
         environment = env;
         renderer.initialize(this, environment);
         uiSystem.initialize(this);
         physics.initialize(this, Application.get.settings.physicsStep, Application.get.settings.maxSubSteps,
             Application.get.settings.gravity);
         audio.initialize(this);
+        particles.initialize(this);
 
         reg.onUpdate!Transform3D().connect((Registry r, Entity ent) {
             r.get!Transform3D(ent).dirty = true;
@@ -153,6 +158,7 @@ final class World {
         renderer.update();
         uiSystem.update();
         physics.update(dt);
+        particles.update(dt);
         audio.update();
         scripts.update(dt);
     }
@@ -269,6 +275,27 @@ final class World {
                 p.layer = c["layer"].get!int();
                 p.active = c["active"].get!bool();
                 add!UIPrimitive(entity, p);
+            }
+
+            if (o.contains("particles")) {
+                const c = o["particles"];
+                ParticleEmitter em;
+                em.rate = c["rate"].get!float();
+                em.lifetime = c["lifetime"].get!float();
+                em.speed = c["speed"].get!float();
+                em.spread = c["spread"].get!float();
+                em.direction = vec3(c["direction"]);
+                em.gravity = vec3(c["gravity"]);
+                em.startSize = c["start-size"].get!float();
+                em.endSize = c["end-size"].get!float();
+                em.maxParticles = c["max-particles"].get!int();
+                em.enabled = c["enabled"].get!bool();
+                em.additive = c["additive"].get!bool();
+                em.startColor = rgb(c["start-color"]);
+                em.endColor = rgb(c["end-color"]);
+                em.texture = Asset.get.getTexture(c["texture"].get!string());
+
+                add!ParticleEmitter(entity, em);
             }
 
             if (o.contains("scripts")) {
