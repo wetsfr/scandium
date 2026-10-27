@@ -44,7 +44,8 @@ typedef enum ComponentType {
     Collider,
     Primitive,
     Text,
-    Particles
+    Particles,
+    Animations
 } ComponentType;
 
 // engine-level structs
@@ -160,6 +161,16 @@ typedef struct {
     void** texture;
 } ParticleEmitter;
 
+typedef struct {
+    int* animCount;
+    int* current;
+    float* time;
+    float* speed;
+    float* fps;
+    bool* looped;
+    bool* playing;
+} AnimatorComponent;
+
 // functions
 
 // scene
@@ -221,6 +232,12 @@ void add_impulse(Entity e, Vector3 impulse);
 void set_velocity(Entity e, Vector3 vel);
 Vector3 get_velocity(Entity e);
 RaycastHit raycast(Vector3 from, Vector3 to);
+
+void play_animation(Entity e, const char* name, bool loop, float speed);
+void pause_animation(Entity e);
+void resume_animation(Entity e);
+void stop_animation(Entity e);
+void set_animation_speed(Entity e, float speed);
 
 // scenes
 void load_scene(const char* name);

@@ -27,6 +27,7 @@ import ecs.components.audio;
 import ecs.components.rigidbody;
 import ecs.components.ui;
 import ecs.components.particles;
+import ecs.components.animator;
 import core.asset;
 import core.input;
 import core.log;
@@ -66,6 +67,7 @@ enum ComponentType : int {
     primitive,
     text,
     particles,
+    animations
 }
 
 struct WindowConfig {
@@ -98,6 +100,7 @@ alias scConfig = ScView!(WindowConfig, ["windowWidth", "windowHeight", "vsync", 
 alias scParticleEmitter = ScView!(ParticleEmitter, ["enabled", "additive", "rate", "lifetime",
     "speed", "spread", "startSize", "endSize", "maxParticles", "direction", "gravity",
     "startColor", "endColor", "texture"]);
+alias scAnimator = ScView!(Animator, ["animCount", "current", "time", "speed", "fps", "looped", "playing"]);
 
 struct scMeshCollider {
     ColliderType type;
@@ -145,6 +148,7 @@ __gshared scMeshCollider clScratch;
 __gshared scUIPrimitive prScratch;
 __gshared scUIText txScratch;
 __gshared scParticleEmitter peScratch;
+__gshared scAnimator animScratch;
 __gshared string nameStr;
 __gshared string titleStr;
 
@@ -299,6 +303,7 @@ void* scGetComponent(Entity e, ComponentType type) {
         case ComponentType.primitive: return getView!UIPrimitive(e, prScratch);
         case ComponentType.text:      return getView!UIText(e, txScratch);
         case ComponentType.particles: return getView!ParticleEmitter(e, peScratch);
+        case ComponentType.animations: return getView!Animator(e, animScratch);
         default: return null;
     }
 }
@@ -313,6 +318,7 @@ void scRemoveComponent(Entity e, ComponentType type) {
         case ComponentType.primitive: gWorld.remove!UIPrimitive(e);  break;
         case ComponentType.text:      gWorld.remove!UIText(e);       break;
         case ComponentType.particles: gWorld.remove!ParticleEmitter(e); break;
+        case ComponentType.animations: gWorld.remove!Animator(e); break;
         default: break;
     }
 }
@@ -378,6 +384,14 @@ Vector3 scGetVelocity(Entity e) {
 }
 RaycastHit scRaycast(Vector3 from, Vector3 to) { return gWorld.physics.raycast(from, to); }
 
+// animations
+void scPlayAnimation(Entity e, const(char)* name, bool looped, float speed) {
+    gWorld.animations.play(e, str(name), looped, speed);
+}
+void scPauseAnimation(Entity e) { gWorld.animations.pause(e); }
+void scResumeAnimation(Entity e) { gWorld.animations.resume(e); }
+void scStopAnimation(Entity e) { gWorld.animations.stop(e); }
+void scSetAnimSpeed(Entity e, float speed) { gWorld.animations.setSpeed(e, speed); }
 
 // scenes
 void scLoadScene(const(char)* name) {
@@ -680,6 +694,12 @@ private:
         tccAddFn!scAddImpulse(s, "add_impulse");
         tccAddFn!scSetVelocity(s, "set_velocity");
         tccAddFn!scGetVelocity(s, "get_velocity");
+
+        tccAddFn!scPlayAnimation(s, "play_animation");
+        tccAddFn!scPauseAnimation(s, "pause_animation");
+        tccAddFn!scResumeAnimation(s, "resume_animation");
+        tccAddFn!scStopAnimation(s, "stop_animation");
+        tccAddFn!scSetAnimSpeed(s, "set_animation_speed");
 
         tccAddFn!scLoadScene(s, "load_scene");
 
