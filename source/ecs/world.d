@@ -15,12 +15,14 @@ import ecs.components.rigidbody;
 import ecs.components.audio;
 import ecs.components.ui;
 import ecs.components.particles;
+import ecs.components.animator;
 
 import ecs.systems.renderer;
 import ecs.systems.ui;
 import ecs.systems.physics;
 import ecs.systems.audio;
 import ecs.systems.particles;
+import ecs.systems.animation;
 
 import script_engine;
 
@@ -72,6 +74,7 @@ final class World {
     EventBus events;
     ScriptSystem scripts;
     ParticleSystem particles;
+    AnimationSystem animations;
 
     this() {
         reg = new Registry();
@@ -132,6 +135,7 @@ final class World {
         physics = new PhysicsSystem();
         audio = new AudioSystem();
         particles = new ParticleSystem();
+        animations = new AnimationSystem();
         environment = env;
         renderer.initialize(this, environment);
         uiSystem.initialize(this);
@@ -139,6 +143,7 @@ final class World {
             Application.get.settings.gravity);
         audio.initialize(this);
         particles.initialize(this);
+        animations.initialize(this);
 
         reg.onUpdate!Transform3D().connect((Registry r, Entity ent) {
             r.get!Transform3D(ent).dirty = true;
@@ -149,10 +154,12 @@ final class World {
         reg.onConstruct!Rigidbody3D().connect((Registry r, Entity e) {
             physics.onRigidbody(e);
         });
+        reg.onConstruct!Animator().connect(&animations.onAnimator);
         reg.onDestroy!LightSource().connect(&renderer.onLightDestroy);
         reg.onDestroy!Rigidbody3D().connect((Registry r, Entity e) {
             physics.onRigidDestroy(e);
         });
+        reg.onDestroy!Animator().connect(&animations.onAnimatorDestroy);
     }
     void update(float dt) {
         renderer.update();
@@ -160,6 +167,7 @@ final class World {
         physics.update(dt);
         particles.update(dt);
         audio.update();
+        animations.update(dt);
         scripts.update(dt);
     }
     void draw() {
@@ -296,6 +304,21 @@ final class World {
                 em.texture = Asset.get.getTexture(c["texture"].get!string());
 
                 add!ParticleEmitter(entity, em);
+            }
+
+            if (o.contains("animator")) {
+                const c = o["animator"];
+                Animator an;
+                an.modelName = o["mesh-renderer"]["model"].get!string();
+                an.speed   = c.value("speed", 1.0f);
+                an.looped  = c.value("loop", true);
+                an.playing = c.value("playing", true);
+                an.fps     = c.value("fps", 60.0f);
+                an.current = c.value("clip", 0);
+                add!Animator(entity, an);
+                
+                if (c.contains("animation"))
+                    animations.play(entity, c["animation"].get!string(), an.looped, an.speed);
             }
 
             if (o.contains("scripts")) {

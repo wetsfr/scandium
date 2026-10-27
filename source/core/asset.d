@@ -9,6 +9,8 @@ final class Asset {
     private Shader*[string]    shaders;
     private Font*[string]      fonts;
 
+    string[string] modelPaths;
+
     private this() {}
     private static shared Asset _instance;
     static Asset get() {
@@ -74,6 +76,7 @@ final class Asset {
 
         if (auto oldPtr = name in models) UnloadModel(**oldPtr);
         models[name] = mdl;
+        modelPaths[name] = path;
         return *mdl;
     }
     Model* getModel(string name) nothrow {
