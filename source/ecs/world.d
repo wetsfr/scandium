@@ -3,6 +3,7 @@ import ecs.ecs;
 import core.asset;
 import core.log;
 import core.application;
+static import core.pak;
 
 import ecs.components.tag;
 import ecs.components.transform;
@@ -177,7 +178,7 @@ final class World {
     ~this() { scripts.shutdown(); }
 
     void loadJson(string path) {
-        auto data = Json.parseFile(path, true);
+        auto data = Json.parse(core.pak.readText(path), true);
 
         foreach (ref item; data["assets"]) {
             const a = item;

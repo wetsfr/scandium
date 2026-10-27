@@ -3,6 +3,7 @@ import raylib;
 import json;
 import ecs.world;
 import core.asset;
+static import core.pak;
 
 struct Environment {
     Vector3 ambientColor = {0.0f, 0.0f, 0.0f};
@@ -12,7 +13,7 @@ struct Environment {
     float fogStart, fogEnd;
 
     void fromJsonScene(string path) {
-        auto scene = Json.parseFile(path, true);
+        auto scene = Json.parse(core.pak.readText(path), true);
 
         this.ambientColor = toVectorColor(Color(
             scene["data"]["environment"]["ambient"][0].get!ubyte(),

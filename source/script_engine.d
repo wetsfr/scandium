@@ -31,6 +31,7 @@ import ecs.components.animator;
 import core.asset;
 import core.input;
 import core.log;
+static import core.pak;
 
 immutable apiHeader = import("script_api.h");
 
@@ -393,6 +394,8 @@ void scResumeAnimation(Entity e) { gWorld.animations.resume(e); }
 void scStopAnimation(Entity e) { gWorld.animations.stop(e); }
 void scSetAnimSpeed(Entity e, float speed) { gWorld.animations.setSpeed(e, speed); }
 
+void scSetText(Entity e, const(char)* text) { if (gWorld.has!UIText(e)) gWorld.get!UIText(e).text = str(text); }
+
 // scenes
 void scLoadScene(const(char)* name) {
     try gWorld.loadJson(str(name));
@@ -604,7 +607,7 @@ private:
         registerApi(s);
         string code;
         try {
-            code = readText(path);
+            code = core.pak.readText(path);
         } catch (Exception e) {
             Log.get.log(LogType.error, format("cannot read script %s: %s", path, e.msg));
             tcc_delete(s);
@@ -700,6 +703,8 @@ private:
         tccAddFn!scResumeAnimation(s, "resume_animation");
         tccAddFn!scStopAnimation(s, "stop_animation");
         tccAddFn!scSetAnimSpeed(s, "set_animation_speed");
+
+        tccAddFn!scSetText(s, "set_text");
 
         tccAddFn!scLoadScene(s, "load_scene");
 

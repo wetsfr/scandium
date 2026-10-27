@@ -1,4 +1,4 @@
-module core.application;
+module core.application; 
 import std.string;
 import raylib;
 import json;
@@ -8,6 +8,7 @@ import core.log;
 import core.input;
 import core.game_time;
 import core.config;
+import core.pak;
 
 import ecs.world;
 import ecs.environment;
@@ -23,12 +24,19 @@ import scene.scene;
 
 import std.stdio;
 
+/* core app */
+enum AppMode { Developer = 0, Distribution = 1 }
+enum VERSION = "1.0.0";
+enum MODE = AppMode.Developer;
+enum PAK_PATH = "game.pak";
+
+
 // GLOBALVAR shadername
 enum ShaderName = "default";
 // GLOBALVAR skyboxsize
 enum SkyboxSize = 500.0f;
 // GLOBALVAR configpath
-enum ConfigPath = "cfg.ini";
+enum ConfigPath = "app.cfg";
 
 struct AppSettings {
     // basic
@@ -50,6 +58,7 @@ struct AppSettings {
 
 final class Application {
     AppSettings settings;
+    AppMode appMode;
 
     private Asset asset;
     private Log log;
@@ -71,12 +80,14 @@ final class Application {
         return cast(Application) _instance;
     }
 
-    void initialize() {
+    void initialize(AppMode mode = AppMode.Developer) {
         this.settings = generateAppSettings(ConfigPath);
         this.asset = asset.get;
         this.log = log.get;
         this.input = input.get;
         this.time = time.get;
+        this.appMode = mode;
+        if (appMode == AppMode.Distribution) mountPak(PAK_PATH);
 
         this.log.init(settings.debugLog, "latest.log");
         this.sceneManager = new SceneManager();
@@ -96,7 +107,7 @@ final class Application {
         log.log(LogType.info, "app created!");
         asset.loadShaderFromMemory(ShaderName, import("vs.glsl"), import("fs.glsl"));
 
-        auto entry = Json.parseFile("entry.json");
+        auto entry = Json.parse(core.pak.readText("entry.json"), true);
         foreach (ref scene; entry["scenes"]) {
             sceneManager.addScene(scene.get!string());
         }

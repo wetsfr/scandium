@@ -239,6 +239,8 @@ void resume_animation(Entity e);
 void stop_animation(Entity e);
 void set_animation_speed(Entity e, float speed);
 
+void set_text(Entity e, const char* text);
+
 // scenes
 void load_scene(const char* name);
 

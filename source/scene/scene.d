@@ -3,6 +3,7 @@ import ecs.world;
 import ecs.environment;
 import json;
 import core.log;
+static import core.pak;
 
 final class Scene {
     World world;
@@ -11,7 +12,7 @@ final class Scene {
     this(string path) {
         world = new World();
         Environment env = Environment();
-        this.name = Json.parseFile(path, true)["data"]["name"].get!string();
+        this.name = Json.parse(core.pak.readText(path), true)["data"]["name"].get!string();
         world.initialize(env);
         world.loadJson(path);
     }
