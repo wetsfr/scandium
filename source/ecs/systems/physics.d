@@ -249,6 +249,7 @@ private:
 
         Vector3 e = QuaternionToEuler(t.rotationQ);
         t.rotation = Vector3(e.x * RAD2DEG, e.y * RAD2DEG, e.z * RAD2DEG);
+        t.eulerCache = t.rotation;
     }
 
     static extern(C) void nearCallback(void* data, dGeomID o1, dGeomID o2) {

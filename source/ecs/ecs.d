@@ -69,11 +69,15 @@ private final class SparseSet(T) : IPool {
         return idx < sparse.length && sparse[idx] < dense.length
             && dense[sparse[idx]] == e;
     }
-    ref T get(Entity e) { return instances[sparse[entityIndex(e)]]; }
+    ref T get(Entity e) {
+        assert(contains(e), "component missing on entity");
+        return instances[sparse[entityIndex(e)]];
+    }
     T* tryGet(Entity e) {
         return contains(e) ? &instances[sparse[entityIndex(e)]] : null;
     }
     ref T emplace(Entity e, T value) {
+        if (contains(e)) remove(e);
         auto idx = entityIndex(e);
         if (idx >= sparse.length)
             sparse.length = idx + 1;
@@ -85,6 +89,7 @@ private final class SparseSet(T) : IPool {
     }
      
     ref T patch(Entity e, void delegate(ref T) mutator) {
+        assert(contains(e), "component missing on entity");
         auto ptr = &instances[sparse[entityIndex(e)]];
         mutator(*ptr);
         onUpdate.emit(owner, e);
@@ -92,6 +97,7 @@ private final class SparseSet(T) : IPool {
     }
 
     void remove(Entity e) {
+        if (!contains(e)) return;
         onDestroy.emit(owner, e);
         auto idx = entityIndex(e);
         auto denseIdx = sparse[idx];
@@ -207,10 +213,6 @@ final class Registry
         }
         return result;
     }
-}
-
-private template ApplyGet(T) {
-    static ref T ApplyGet(Registry r, Entity e) { return r.get!T(e); }
 }
 
 final class EventBus {

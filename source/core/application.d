@@ -129,7 +129,7 @@ final class Application {
 
     ~this() {
         asset.unload();
-        sceneManager.getCurrent.world.physics.shutdown();
+        if (auto current = sceneManager.getCurrent) current.world.physics.shutdown();
         CloseAudioDevice();
         CloseWindow();
     }

@@ -2,6 +2,7 @@ module ecs.systems.audio;
 import raylib;
 
 import ecs.world;
+import ecs.ecs;
 import ecs.components.audio;
 import ecs.components.transform;
 import ecs.components.renderer.camera;
@@ -11,7 +12,9 @@ final class AudioSystem {
 
     void initialize(World world) { this.world = world; }
     void update() {
-        Vector3 listener = world.get!Transform3D(world.getActiveCamera()).position;
+        Entity cam = world.getActiveCamera();
+        if (cam == nullEntity || !world.has!Transform3D(cam)) return;
+        Vector3 listener = world.get!Transform3D(cam).position;
 
         foreach (entity, audio, transform; world.view!(AudioSource, Transform3D)) {
             if (!audio.sound) continue;

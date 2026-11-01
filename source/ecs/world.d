@@ -29,6 +29,7 @@ import script_engine;
 
 import raylib;
 import json;
+import std.conv : to;
 
 public Color toColor(Vector3 col) {
     return Color(
@@ -84,7 +85,16 @@ final class World {
     }
 
     // entities
+    private string uniqueName(string name) {
+        if (name !in nameToEntity) return name;
+        for (int i = 1; ; i++) {
+            auto candidate = name ~ "_" ~ to!string(i);
+            if (candidate !in nameToEntity) return candidate;
+        }
+    }
+
     Entity create(string name) {
+        name = uniqueName(name);
         auto e = reg.create();
         reg.emplace!Tag(e, name);
 
@@ -92,7 +102,22 @@ final class World {
         nameToEntity[name] = e;
         return e;
     }
-    string entityName(Entity e) { return entityToName[e]; }
+    string entityName(Entity e) {
+        if (auto n = e in entityToName) return *n;
+        return null;
+    }
+    bool rename(Entity e, string newName) {
+        auto old = e in entityToName;
+        if (!old) return false;
+        string oldName = *old;
+        if (newName == oldName) return true;
+        if (newName in nameToEntity) return false;
+        nameToEntity.remove(oldName);
+        entityToName[e] = newName;
+        nameToEntity[newName] = e;
+        if (auto tag = reg.tryGet!Tag(e)) tag.name = newName;
+        return true;
+    }
     void destroy(Entity e) {
         if (reg.valid(e)) {
             if (auto nameptr = e in entityToName) {
@@ -116,6 +141,8 @@ final class World {
         return reg.get!T(e);    }
     bool has(T)(Entity e) {
         return reg.has!T(e); }
+    ref T patch(T)(Entity e, void delegate(ref T) mutator) {
+        return reg.patch!T(e, mutator); }
 
     // ecs stuff
     auto view(Types...)() {
@@ -203,7 +230,7 @@ final class World {
                 continue;
             }
             auto entity = create(name);
-            add!Transform3D(entity, vec3(o["transform"]["position"]), vec3(o["transform"]["rotation"]), vec3(o["transform"]["scale"]));
+            add!Transform3D(entity, Transform3D.make(vec3(o["transform"]["position"]), vec3(o["transform"]["rotation"]), vec3(o["transform"]["scale"])));
 
             if (o.contains("mesh-renderer")) {
                 const c = o["mesh-renderer"];

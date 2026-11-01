@@ -28,6 +28,7 @@ final class RendererSystem {
 
     private LightLoc[] lights;
     private int lightCount = 0;
+    private bool warnedNoCamera = false;
 
     void onMeshRenderer(Registry reg, Entity e) {
         auto ref component = world.get!MeshRenderer(e);
@@ -79,9 +80,10 @@ final class RendererSystem {
     }
     void update() {
         Entity camera = world.getActiveCamera();
-        auto cameraTransform = world.get!Transform3D(camera);
-
-        SetShaderValue(*main, viewLoc, &cameraTransform.position, ShaderUniformDataType.SHADER_UNIFORM_VEC3);
+        if (camera != nullEntity && world.has!Transform3D(camera)) {
+            auto viewPos = world.get!Transform3D(camera).position;
+            SetShaderValue(*main, viewLoc, &viewPos, ShaderUniformDataType.SHADER_UNIFORM_VEC3);
+        }
 
         int i = 0;
         foreach (entity, transform, light; world.view!(Transform3D, LightSource)()) {
@@ -102,10 +104,14 @@ final class RendererSystem {
     }
     void draw() {
         Entity cam = world.getActiveCamera();
-        if (cam == nullEntity) {
-            Log.get.log(LogType.error, "no active camera!");
+        if (cam == nullEntity || !world.has!Transform3D(cam) || !world.has!WorldCamera(cam)) {
+            if (!warnedNoCamera) {
+                Log.get.log(LogType.error, "no active camera!");
+                warnedNoCamera = true;
+            }
             return;
         }
+        warnedNoCamera = false;
 
         auto ref camTransform = world.get!Transform3D(cam);
         auto ref worldCamera = world.get!WorldCamera(cam);
