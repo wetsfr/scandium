@@ -4,9 +4,6 @@ __dummy.html
 docs/
 dist/
 /scandium
-scandium.so
-scandium.dylib
-scandium.dll
 libscandium.a
 scandium.a
 scandium.lib
@@ -21,3 +18,15 @@ scandium-test-*
 *.ps1
 *.bat
 *.res
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.*
+!coverage.go
+*.coverprofile
+profile.cov
+go.work
+go.work.sum
+.env
