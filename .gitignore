@@ -20,3 +20,4 @@ scandium-test-*
 *.dll
 *.ps1
 *.bat
+*.res
