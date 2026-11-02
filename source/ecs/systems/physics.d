@@ -2,7 +2,7 @@ module ecs.systems.physics;
 
 import ode;
 import raylib;
-import std.math : sqrt;
+import std.math : sqrt, isFinite;
 import std.typecons : Tuple, tuple;
 import ecs.components.rigidbody;
 import ecs.components.transform;
@@ -43,6 +43,11 @@ public:
         space = dHashSpaceCreate(null);
         contactGroup = dJointGroupCreate(0);
         dWorldSetGravity(odeWorld, 0.0, -physicsGravity, 0.0);
+        dWorldSetQuickStepNumIterations(odeWorld, 30);
+        dWorldSetCFM(odeWorld, 1e-5);
+        dWorldSetERP(odeWorld, 0.2);
+        dWorldSetContactSurfaceLayer(odeWorld, 0.001);
+        dWorldSetContactMaxCorrectingVel(odeWorld, 10.0);
     }
 
     void shutdown() {
@@ -98,7 +103,7 @@ public:
         while (m_accumulator >= physicsStep && steps < maxSubSteps) {
             if (steps == 0) m_current = null;
             dSpaceCollide(space, cast(void*) this, &nearCallback);
-            dWorldStep(odeWorld, physicsStep);
+            dWorldQuickStep(odeWorld, physicsStep);
             dJointGroupEmpty(contactGroup);
             m_accumulator -= physicsStep;
             steps++;
@@ -111,6 +116,13 @@ public:
             auto rb = &m_world.get!Rigidbody3D(e);
             auto tr = &m_world.get!Transform3D(e);
             if (!rb.isKinematic && rb.body) {
+                if (!bodyIsFinite(rb.body)) {
+                    Log.get.log(LogType.warning, "physics: body state became invalid (NaN), reset to last good transform");
+                    setBodyTransform(rb.body, *tr);
+                    dBodySetLinearVel(rb.body, 0, 0, 0);
+                    dBodySetAngularVel(rb.body, 0, 0, 0);
+                    continue;
+                }
                 fromODE(rb.body, *tr);
                 tr.dirty = true;
                 m_world.registry().patch!Transform3D(e, (ref Transform3D) {});
@@ -240,6 +252,17 @@ private:
         dBodySetQuaternion(b, q.ptr);
     }
 
+    static bool bodyIsFinite(dBodyID b) {
+        auto p = dBodyGetPosition(b);
+        auto q = dBodyGetQuaternion(b);
+        auto v = dBodyGetLinearVel(b);
+        auto w = dBodyGetAngularVel(b);
+        foreach (i; 0 .. 3)
+            if (!isFinite(p[i]) || !isFinite(v[i]) || !isFinite(w[i])) return false;
+        foreach (i; 0 .. 4) if (!isFinite(q[i])) return false;
+        return true;
+    }
+
     static void fromODE(dBodyID b, ref Transform3D t) {
         auto p = dBodyGetPosition(b);
         t.position = Vector3(p[0], p[1], p[2]);
@@ -275,12 +298,19 @@ private:
         if (cA.isTrigger || cB.isTrigger) return;
 
         b1 = rbA.body; b2 = rbB.body;
+        bool staticA = b1 is null || rbA.isKinematic;
+        bool staticB = b2 is null || rbB.isKinematic;
+        if (staticA && staticB) return;
+        if (staticA) b1 = null;
+        if (staticB) b2 = null;
         foreach (i; 0 .. n) {
             dContact c;
-            c.surface.mode = dContactBounce;
+            c.surface.mode = dContactBounce | dContactSoftCFM | dContactSoftERP | dContactApprox1;
             c.surface.mu = rbA.friction * rbB.friction;
             c.surface.bounce = rbA.restitution > rbB.restitution ? rbA.restitution : rbB.restitution;
             c.surface.bounce_vel = 0.1;
+            c.surface.soft_cfm = 1e-5;
+            c.surface.soft_erp = 0.2;
             c.geom = cg[i];
 
             auto j = dJointCreateContact(odeWorld, contactGroup, &c);

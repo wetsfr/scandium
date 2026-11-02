@@ -79,6 +79,11 @@ final class RendererSystem {
         SetShaderValue(*main, fogColorLoc, &env.fogColor, ShaderUniformDataType.SHADER_UNIFORM_VEC3);
     }
     void update() {
+        SetShaderValue(*main, ambientLoc, &env.ambientColor, ShaderUniformDataType.SHADER_UNIFORM_VEC3);
+        SetShaderValue(*main, fogStartLoc, &env.fogStart, ShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+        SetShaderValue(*main, fogEndLoc, &env.fogEnd, ShaderUniformDataType.SHADER_UNIFORM_FLOAT);
+        SetShaderValue(*main, fogColorLoc, &env.fogColor, ShaderUniformDataType.SHADER_UNIFORM_VEC3);
+
         Entity camera = world.getActiveCamera();
         if (camera != nullEntity && world.has!Transform3D(camera)) {
             auto viewPos = world.get!Transform3D(camera).position;
@@ -132,6 +137,8 @@ final class RendererSystem {
         camera.target = Vector3Add(camera.position, lookDir);
         camera.up = Vector3(0,1,0);
         worldCamera.right = Vector3Normalize(Vector3CrossProduct(camera.up, lookDir));
+
+        if (env.sky == null) ClearBackground(toColor(env.fogColor));
 
         Matrix view = MatrixLookAt(camera.position, camera.target, camera.up);
         Matrix proj = MatrixPerspective(camera.fovy * DEG2RAD, GetScreenWidth() / cast(float)GetScreenHeight(), 0.1f, 1000.0f);

@@ -24,12 +24,9 @@ import scene.scene;
 
 import std.stdio;
 
-/* core app */
 enum AppMode { Developer = 0, Distribution = 1 }
-enum VERSION = "1.0.0";
-enum MODE = AppMode.Developer;
-enum PAK_PATH = "game.pak";
 
+enum PAK_PATH = "game.pak";
 
 // GLOBALVAR shadername
 enum ShaderName = "default";

@@ -93,3 +93,16 @@ void dJointAttach(dJointID, dBodyID, dBodyID);
 dGeomID dCreateRay(dSpaceID, double length);
 void dGeomRaySet(dGeomID, double px, double py, double pz, double dx, double dy, double dz);
 void dBodySetAngularVel(dBodyID, double x, double y, double z);
+void dWorldQuickStep(dWorldID, double stepsize);
+void dWorldSetQuickStepNumIterations(dWorldID, int num);
+void dWorldSetCFM(dWorldID, double cfm);
+void dWorldSetERP(dWorldID, double erp);
+void dWorldSetContactSurfaceLayer(dWorldID, double depth);
+void dWorldSetContactMaxCorrectingVel(dWorldID, double vel);
+int dBodyIsKinematic(dBodyID);
+const(double)* dBodyGetAngularVel(dBodyID);
+dBodyID dGeomGetBody(dGeomID);
+
+enum int dContactSoftERP = 0x008;
+enum int dContactSoftCFM = 0x010;
+enum int dContactApprox1 = 0x7000;

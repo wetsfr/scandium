@@ -2,6 +2,10 @@ import raylib;
 import core.application;
 import ecs.world;
 import core.pak;
+import std.stdio;
+
+enum VERSION = "1.1.0";
+enum MODE = AppMode.Developer;
 
 void main(string[] args)
 {
@@ -11,7 +15,9 @@ void main(string[] args)
 	}
 	
 	auto app = Application.get;
-	app.initialize(AppMode.Distribution);
+	writeln(MODE);
+	app.initialize(MODE);
+	writeln(app.appMode);
 
 	app.run();
 }
